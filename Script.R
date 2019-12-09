@@ -4,6 +4,7 @@ library(tidyverse)
 library(lubridate)
 library(gsubfn)
 library(maps)
+library(plotly)
 
 theme_happiness <- function (base_size = 11, base_family = "") {
   theme_bw() %+replace% 
@@ -19,8 +20,6 @@ theme_happiness <- function (base_size = 11, base_family = "") {
       legend.background = element_rect(color = "#000000", fill = NA, size = 0.5)
       )
 }
-
-
 
 W2015 <- read.csv(file = "files/2015.csv", sep=",")
 W2016 <- read.csv(file = "files/2016.csv", sep=",")
@@ -75,3 +74,5 @@ rm(world_map, Social2017, W2017)
 E0817$year <- as.character(E0817$year)
 E0817$year <- as.Date(E0817$year, format="%Y")
 E0817 %>% filter(country == "Afghanistan" | country == "Greece" | country == "Syria" | country == "Togo" | country == "Norway" | country == "France" | country == "Russia" | country == "United States" | country == "China") %>% ggplot(., aes(x=year, y=Life.Ladder, color=country)) + geom_line(size = 1.5) + ggtitle("Happiness for 9 countries from 2008 to 2017") + xlab("Year") + ylab("Happiness Score") + labs(color="Country    ") + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_color_brewer(palette = "OrRd")
+
+ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score, group=region)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$region, check_overlap = T)

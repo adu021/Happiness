@@ -1,0 +1,22 @@
+---
+title: ""
+output: html_document
+css: "CSS.css"
+---
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+<fieldset><center><img src="Introduction.png" alt="N/A"></center>
+<p class="quote">“Are you happy?”</p><br>
+<p>Answering such a question can seem hard at first, because it involves questioning your own environment, your current situation, your current emotions and feelings, and yet, it is a question that is asked to the human population every single year.</p>
+<p>Thanks to the <b>Cantril Ladder</b>, people are asked to scale their current happiness from 0 to 10, and their scores are then combined with other people from the same country, to obtain a national 'Happiness Score'. It can then be used to compare the happiness of different countries, all the while adding other factors to the mix, to try to understand what could be the cause, or what could heavily influence the human happiness.</p><br>
+<p class="quote">“Happiness is when your life fulfills your needs.” -HappinessInternational.org</p><br>
+<p>It is believed that happiness would correspond to a certain amount of needs that a human being would have, which would mean that if they fulfill their needs, then they should be happy. However, what do people need to be happy? Is it money? Is it food? Is it safety?</p>
+<p>The purpose of this small study is not to find a universal answer to happiness, nor to explain what specific behaviour is required to live a happy life, but to <b>find out how people's happiness can be influenced by or related to social factors</b>, such as politics, economy, health or education.</p><br>
+<p class="quote">“The greatest source of happiness is the ability to be grateful at all times.” -Zig Ziglar</p><br>
+<p>The data used in this report mostly comes from the website Kaggle, such as "World Happiness Report", "World Happiness Data", "Human Happiness Indicators", "Social Progress and Happiness" and "Happiness and Alcohol Consumption". The last database called "Personal well being estimates by age and sex" comes from the Office for National Statistics – U.K..</p>
+</fieldset><br>
