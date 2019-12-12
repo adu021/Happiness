@@ -5,12 +5,55 @@ css: "CSS.css"
 ---
 <br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+#Useful Libraries
+library(readxl)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(gsubfn)
+library(maps)
+library(plotly)
+library(gridExtra)
+
+#Custom theme for a constant look
+theme_happiness <- function (base_size = 11, base_family = "") {
+  theme_bw() %+replace% 
+    theme(
+      legend.key = element_rect(colour="#000000", size=0.5),
+      legend.box.margin = margin(8, 8, 8, 8),
+      panel.grid.major  = element_line(color = "#FFFFFF"),
+      panel.background = element_rect(fill = "#FFFFFF"),
+      panel.border = element_rect(color = "#000000", fill = NA),
+      axis.line = element_line(color = "#000000"),
+      axis.ticks = element_line(color = "#000000"),
+      axis.text = element_text(color = "#000000"),
+      legend.background = element_rect(color = "#000000", fill = NA, size = 0.5)
+      )
+}
+
+#Necessary files
+if(isTRUE(getOption('knitr.in.progress'))) { 
+  W2017 <- read.csv("files/2017.csv")
+  Alcohol <- read.csv(file ="files/HappinessAlcoholConsumption.csv")
+  Social2017 <- read.csv(file = "files/SocialAspects.csv")
+  Indicators <- read.csv(file = "files/Kag_happiness_indicators.csv")
+  E0817 <- read.csv(file = "files/Original_2017_full.csv", sep=",")
+} else {
+  W2017 <- read.csv("files/2017.csv")
+  Alcohol <- read.csv(file = "files/HappinessAlcoholConsumption.csv")
+  Social2017 <- read.csv(file = "files/SocialAspects.csv")
+  Indicators <- read.csv(file = "files/Kag_happiness_indicators.csv")
+  E0817 <- read.csv(file = "files/Original_2017_full.csv", sep=",")
+}
 ```
 
-<fieldset><center><img src="Introduction.png" alt="N/A"></center>
+<fieldset><center><img src="Introduction.png" alt="N/A">
+<video width="640" height="360" controls>
+  <source src="Intro.mp4" type="video/mp4">
+</video></center><br>
 <p class="quote">“Are you happy?”</p><br>
 <p>Answering such a question can seem hard at first, because it involves questioning your own environment, your current situation, your current emotions and feelings, and yet, it is a question that is asked to the human population every single year.</p>
 <p>Thanks to the <b>Cantril Ladder</b>, people are asked to scale their current happiness from 0 to 10, and their scores are then combined with other people from the same country, to obtain a national 'Happiness Score'. It can then be used to compare the happiness of different countries, all the while adding other factors to the mix, to try to understand what could be the cause, or what could heavily influence the human happiness.</p><br>
@@ -19,4 +62,216 @@ knitr::opts_chunk$set(echo = FALSE)
 <p>The purpose of this small study is not to find a universal answer to happiness, nor to explain what specific behaviour is required to live a happy life, but to <b>find out how people's happiness can be influenced by or related to social factors</b>, such as politics, economy, health or education.</p><br>
 <p class="quote">“The greatest source of happiness is the ability to be grateful at all times.” -Zig Ziglar</p><br>
 <p>The data used in this report mostly comes from the website Kaggle, such as "World Happiness Report", "World Happiness Data", "Human Happiness Indicators", "Social Progress and Happiness" and "Happiness and Alcohol Consumption". The last database called "Personal well being estimates by age and sex" comes from the Office for National Statistics – U.K..</p>
+</fieldset><br>
+
+<fieldset>
+video
+</fieldset><br>
+
+<fieldset><center><img src="General.png" alt="N/A"></center>
+<center>
+```{r}
+#Joining the two different 2017 databases by country
+Year2017 <- left_join(W2017, Social2017, by = "Country")
+Map2017 <- left_join(W2017, Social2017, by = "Country")
+#Joining it with the world map to be able to create a coloured map
+world_map <- map_data("world")
+colnames(Map2017)[1] <- "region"
+world_map$region <- gsub("USA", "United States", world_map$region)
+world_map$region <- gsub("UK", "United Kingdom", world_map$region)
+Map2017 <- left_join(world_map, Map2017, by = "region")
+ggplot(Map2017, aes(long, lat, group = group)) + geom_polygon(aes(fill = Happiness.Score), color = "white") + scale_fill_viridis_c(option = "A", na.value = "black") + theme_happiness() + ggtitle("World Happiness - 2017")+ labs(fill="Happiness Score") + theme(plot.title = element_text(hjust = 0.5))
+#Getting rid of the unnecessary databases
+rm(world_map, Social2017, W2017)
+```
+</center><br>
+<p>While happiness is a worldwide shared concept, not every country is as happy as the others, sometimes even affecting whole areas: while Europe and Northern America seem like areas where people are fairly happy with their lives, others like South America, Africa and Asia tend to be less happy.</p><br>
+<center>
+```{r}
+#Uniting the different years into one column
+Indicators <- Indicators %>% unite(col=year, from=c("y94","y96","y98","y00","y02","y04","y06"), sep="-")
+#Changing the character strings into the actual corresponding year
+Indicators$year <- gsub("1-0-0-0-0-0-0", "1994", Indicators$year)
+Indicators$year <- gsub("0-1-0-0-0-0-0", "1996", Indicators$year)
+Indicators$year <- gsub("0-0-1-0-0-0-0", "1998", Indicators$year)
+Indicators$year <- gsub("0-0-0-1-0-0-0", "2000", Indicators$year)
+Indicators$year <- gsub("0-0-0-0-1-0-0", "2002", Indicators$year)
+Indicators$year <- gsub("0-0-0-0-0-1-0", "2004", Indicators$year)
+Indicators$year <- gsub("0-0-0-0-0-0-1", "2006", Indicators$year)
+#Filtering and summarizing important information and making it into a plot
+Year9406 <- Indicators %>% group_by(year) %>% mutate(Total=n()) %>% ungroup() %>% group_by(year, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
+ggplot(Year9406, aes(x=year, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness from 1994 to 2006") + xlab("Year") + ylab("Percentage") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="right", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+```
+</center><br>
+<p>Based on the data from a study on the birtish population, it is possible to see that the quantity of people being fairly happy, happy or not so happy seem to remain constant through the years. </p><br>
+<center>
+```{r}
+#Transforming year into dates, filtering the wanted countries and plotting it
+E0817$year <- as.character(E0817$year)
+E0817$year <- as.Date(E0817$year, format="%Y")
+E0817 %>% filter(country == "Afghanistan" | country == "Greece" | country == "Syria" | country == "Togo" | country == "Norway" | country == "France" | country == "Russia" | country == "United States" | country == "China") %>% ggplot(., aes(x=year, y=Life.Ladder, color=country)) + geom_line(size = 1.5) + ggtitle("Happiness for 9 countries from 2008 to 2017") + xlab("Year") + ylab("Happiness Score") + labs(color="Country    ") + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_color_brewer(palette = "OrRd")
+```
+</center><br>
+<p>However, it seems that the general happiness score of a country still evolve each and every year, even though it seems to remain constant inside the country. The difference of scores between countries is also very visible from this graph.</p><br>
+<center>
+```{r}
+#Selecting the excel page and the necessary information
+Gender <- read_excel("files/PersonalWellBeing.xls", sheet = "Life Satisfaction", col_names = FALSE, skip = 5, n_max = 2)
+Gender <- Gender[,c(2:8)]
+#Changing Column names because it doesn't work well with just numbers
+names(Gender) <- c("Sex", "Y2012", "Y2013", "Y2014", "Y2015", "Y2016", "Y2017")
+#Gathering the years into one column and transforming it into a date
+Gender <- Gender %>% gather(., Year, Life_Satisfaction, Y2012:Y2017)
+Gender$Year <- as.Date(Gender$Year, format="Y%Y")
+Gender$Year <- year(Gender$Year)
+#Making the studied numbers as numerics instead of characters
+Gender$Life_Satisfaction <- as.numeric(Gender$Life_Satisfaction)
+#Plotting it
+ggplot(Gender, aes(x=Year, y=Life_Satisfaction, color=factor(paste(Sex,'      ')))) + geom_line(size = 2) + ggtitle("Does gender influence happiness?") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5)) + xlab("Year") + ylab("Life Satisfaction Score") + labs(color="Gender") + scale_color_brewer(palette = "OrRd")
+```
+</center><br>
+<p>Based again on the U.K. study, it can be seen that, while most people seem to be farely happy with a score of around 7 points over 10, it seems that girls slightly seem to be happier than boys.</p>
+<center>
+```{r}
+#Repeating the same pattern with Age
+Age <- read_excel("files/PersonalWellBeing.xls", sheet = "Life Satisfaction", col_names = FALSE, skip = 8, n_max = 16)
+Age <- Age[,c(2:8)]
+names(Age) <- c("Age_Group", "Y2012", "Y2013", "Y2014", "Y2015", "Y2016", "Y2017")
+Age <- Age %>% gather(., Year, Life_Satisfaction, Y2012:Y2017)
+Age$Year <- Age$Year %>% as.Date(., format="Y%Y") %>% year()
+Age$Life_Satisfaction <- as.numeric(Age$Life_Satisfaction)
+ggplot(Age, aes(x=Year, y=Life_Satisfaction, color=factor(paste(Age_Group,'      ')))) + ggtitle("Does age influence happiness?") + geom_line() + theme_happiness() + theme(legend.position="top", plot.title = element_text(hjust = 0.5))+ xlab("Year") + ylab("Life Satisfaction Score") + labs(color="Age Group        ")
+```
+</center><br>
+<p>It can also be seen that people from different age groups' happiness is also higher or lower based on which age group people belong to. In fact, people that are between 30 and 40, that are probably working, are slightly less happy than younger or older people.
+Is work related to happiness?</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Economy.png" alt="N/A"></center>
+<center>
+```{r}
+#Plotting the GDP with 2017
+ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$Country, check_overlap = T)
+```
+</center><br>
+<p>With this graph, it can be seen that there seems to be a link between GDP per capita and Happiness. Countries that have a higher GDP per capta are often showing a higher happiness score.
+The country's production looks like it has a strong influence on the happiness of the inhabitants of those countries.</p><br>
+<center>
+```{r}
+Work <- Indicators %>% filter(workstat != is.na(workstat)) %>% group_by(workstat) %>% mutate(Total=n()) %>% ungroup() %>% group_by(workstat, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
+ggplot(Work, aes(x=workstat, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on working situation") + xlab("Working situation") + ylab("Percentage") + labs(fill="Are you Happy?         ") + coord_flip() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+```
+</center><br>
+<p>The working situation of the British people also seem to be highly related to their own happiness. Indeed, it is possible to see that people that are "unemployed" category countains more 'not too happy' and less 'very happy' people than others. The category containing the most 'very happy' is the "retired" and "keeping house" category, which can lead us to think that work impacts negatively people's happiness when they are looking for jobs, but people who are done working or who don't but are not looking for actual jobs are the happiest. Not having to work seems to affect very differently people's lives.
+If we look more closely on people who work, the happiest are the one who are working fulltime, more than the ones working only parttime. We cand wonder if that is related to income.</p><br>
+<center>
+```{r}
+Income <- Indicators %>% filter(income != is.na(income)) %>% group_by(income) %>% mutate(Total=n()) %>% ungroup() %>% group_by(income, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
+ggplot(Income, aes(x=income, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on income") + labs(fill="Are you Happy?         ") + coord_polar() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5), panel.grid = element_blank(), axis.text.x = element_text(size = 8), axis.text.y = element_blank(), axis.title = element_blank(), axis.line = element_blank(), axis.ticks = element_blank(), panel.border = element_blank()) + scale_fill_brewer(palette = "OrRd") + ylim(-100,120)
+```
+</center><br>
+<p>Income also seems to have a certain influence on the happiness of people, as the happiest seemingly are the happiest as their categories of "not too happy" is the smallest and the "very happy" is the biggest.
+But with such a high income also comes a certain sense of prestige, can it be that prestige is also related to happiness?</p><br>
+<center>
+```{r}
+ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_boxplot() + ggtitle("Happiness based on prestige") + xlab("Are you happy?") + ylab("Prestige") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+```
+</center><br>
+<p>Prestige also seems to slightly influence happiness. People who have more prestige seem to be slightly happier.</p><br>
+<p>GDP per capita, working situation, income and prestige all seem to influence happiness, even if it is just a little bit, but working seems very hard if health doesn't follow. Is health related to happiness?</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Health.png" alt="N/A"></center>
+<center>
+```{r}
+#Life Expectancy
+ggplot(Year2017, aes(x=Happiness.Score, y=Healthy.life.expectancy)) + geom_smooth(color = "#FF0000") + ggtitle("Happiness linked to Life Expectancy") + xlab("Happiness Score") + ylab("Healthy Life Expectancy") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5))
+```
+</center><br>
+<p>People living in a country with a higher healthy life expectancy seem to be happier. At first sight, it seems like health is important for happiness.</p><br>
+<center>
+```{r}
+#Grid Arrange: Basic Needs, Nutrition, Shelter, Wellness
+Needs <- ggplot(Year2017, aes(y=Happiness.Score, x=Basic.Human.Needs, color=Happiness.Score)) + geom_point() + ggtitle("Basic Human Needs") + xlab("Basic Human Needs") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#000000")
+Medic <- ggplot(Year2017, aes(y=Happiness.Score, x=Nutrition.and.Basic.Medical.Care, color=Happiness.Score)) + geom_point() + ggtitle("Nutrition and Basic Medical Care") + xlab("Nutrition and Basic Medical Care") + theme_happiness() + theme(legend.position = "none", axis.title.y = element_blank(), axis.text.y = element_blank(), plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#EEEEEE", high ="#FFBB00")
+Shelter <- ggplot(Year2017, aes(y=Happiness.Score, x=Shelter, color=Happiness.Score)) + geom_point() + ggtitle("Shelter") + xlab("Shelter") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#FFAAAA", high ="#DD0000")
+Wellness <- ggplot(Year2017, aes(y=Happiness.Score, x=Health.and.Wellness, color=Happiness.Score)) + geom_point() + ggtitle("Health and Wellness") + xlab("Health and Wellness") + theme_happiness() + theme(legend.position = "none", axis.title.y = element_blank(), axis.text.y = element_blank(), plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCFF", high ="#3333FF")
+grid.arrange(Needs, Medic, Shelter, Wellness, ncol=2)
+```
+</center><br>
+<p>Based on these four point plots, we can see that there doesn't seem to be a trend showing in the graphs. Therefore, it is hard to tell whether basic human needs, shelter, health and wellness or nutrition and basic medical care are actually related to happiness.</p><br>
+<center>
+```{r}
+#Water and Environment
+Water <- ggplot(Year2017, aes(y=Happiness.Score, x=Water.and.Sanitation, color=Happiness.Score)) + geom_point() + ggtitle("Water and Sanitation") + xlab("Water and Sanitation") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+Environment <- ggplot(Year2017, aes(y=Happiness.Score, x=Environmental.Quality, color=Happiness.Score)) + geom_point() + ggtitle("Environmental Quality") + xlab("Environmental Quality") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#ADDD8E", high ="#004529")
+#Grid Arrange to put the different plots together
+grid.arrange(Water, Environment, ncol=2)
+```
+</center><br>
+<p>Health problems can also derive from the quality of the surrounding environment, so we can question if environment is also related to people's happiness.
+From these graphs, we can also see that no trend seem to show, therefore, neither environmental quality nor water and sanitation seem necessary for happiness.</p><br>
+<p>But if basic needs are not even required for happiness... What is? It might be linked to how people were raised, what values they obtained through their educations, and what they feel that they need to be happy.</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Education.png" alt="N/A"></center>
+<center>
+```{r}
+#Access to knowledge, school and information
+BKnow <- ggplot(Year2017, aes(y=Happiness.Score, x=Access.to.Basic.Knowledge, color=Happiness.Score)) + geom_point() + ggtitle("Basic Knowledge") + xlab("Access to Basic Knowledge") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#FF0000")
+AKnow <- ggplot(Year2017, aes(y=Happiness.Score, x=Access.to.Advanced.Education, color=Happiness.Score)) + geom_point() + ggtitle("Advanced Education") + xlab("Advanced Education") + theme_happiness() + theme(legend.position = "none", axis.title.y = element_blank(), axis.text.y = element_blank(), plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#00FF00")
+Info <- ggplot(Year2017, aes(y=Happiness.Score, x=Access.to.Information.and.Communications, color=Happiness.Score)) + geom_point() + ggtitle("Information and Communications") + xlab("Information and Communications") + theme_happiness() + theme(legend.position = "none", axis.title.y = element_blank(), axis.text.y = element_blank(), plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#0000FF")
+grid.arrange(BKnow, AKnow, Info, ncol=3)
+```
+</center><br>
+<p>Trends are also hard to graps considering the effects of education on happiness.</p>
+<p>Most of the countries have access to basic knowledge, but that doesn't seem to affect their happiness score, as a lot of countries that have access to basic knowledge still have low happiness scores.</p>
+<p>Countries where the access to advanced education is higher than 75% actually present a high happiness score but under 75%, it all seems to be fuzzy again.</p>
+<p>Access to information and communication also doesn't seem have an effect on happiness.</p><br>
+<center>
+```{r}
+#Tolerance and Inclusion
+ggplot(Year2017, aes(x=Happiness.Score, y=Tolerance.and.Inclusion)) + geom_point(color = "#FF00FF") + ggtitle("Happiness linked to Tolerance and Inclusion") + xlab("Happiness Score") + ylab("Tolerance and Inclusion") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5))
+```
+</center><br>
+<p>Information and communication can also fight against ignorance which could lead to more tolerance and inclusion. But as information and communications don't seem to have an impact on happiness, it is the same for tolerance and inclusion.</p><br>
+<p>Even though Advanced Education seems to have an influence on happiness, access to basic knowledge, information, communication, tolerance and inclusion don't really seem to affect people's happiness.
+It might be linked to who is deciding on what the education programs, and allows a certain level of information and communications. Is happiness also linked to politics?</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Politics.png" alt="N/A"></center>
+<center>
+```{r}
+#Freedom, choices and rights
+Free <- ggplot(Year2017, aes(y=Happiness.Score, x=Freedom.to.make.life.choices, color=Happiness.Score)) + geom_point() + ggtitle("Life choices") + xlab("Freedom to make life choices") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#56a6ab")
+Rights <- ggplot(Year2017, aes(y=Happiness.Score, x=Personal.Rights, color=Happiness.Score)) + geom_point() + ggtitle("Personal rights") + xlab("Personal rights") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#5f2996")
+grid.arrange(Rights, Free, ncol=2)
+```
+</center><br>
+<p>As weird as it could seem, personal rights also do not seem to not have an impact on happiness. However, most countries that have a happiness score higher than 6 mostly have more freedom to make life choices. Is freedom necessary for happiness but not rights?</p><br>
+<center>
+```{r}
+#Social Support and Social Progress Index
+Support <- ggplot(Year2017, aes(y=Happiness.Score, x=Social.support, color=Happiness.Score)) + geom_point() + ggtitle("Social Support") + xlab("Social Support") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#EEEEEE", high ="#d491fd")
+Progress <- ggplot(Year2017, aes(y=Happiness.Score, x=Social.Progress.Index, color=Happiness.Score)) + geom_point() + ggtitle("Social Progress Index") + xlab("Social Progress Index") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#EEEEEE", high ="#aa8b56")
+grid.arrange(Support, Progress, ncol=2)
+```
+</center><br>
+<p>Just like rights don't affect happiness, social progress don't seem to impact it either. However, it is not the case of social support, where a trend is showing: the more social support is provided, the happier are the people.</p><br>
+<p>Freedom and Social support are two factors that actually seem to impact the happiness of people, where rights and social progress seems to not help. Some people actually believe that alcohol helps them cope with their problems, as in alcohol could provide them social support. What if alcohol was actually related to happiness?</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Alcohol.png" alt="N/A"></center>
+<center>
+```{r}
+#Alcohol: Beer, Spirit and Wine
+Beer <- ggplot(Alcohol, aes(x=Beer_PerCapita, y=HappinessScore, color=HappinessScore)) + geom_point() + ggtitle("Beer and Happiness") + xlab("Consumption of Beer per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#E6E600")
+Spirit <- ggplot(Alcohol, aes(x=Spirit_PerCapita, y=HappinessScore, color=HappinessScore)) + geom_point() + ggtitle("Spirit and Happiness") + xlab("Consumption of Spirit per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#CC88CC")
+Wine <- ggplot(Alcohol, aes(x=Wine_PerCapita, y=HappinessScore, color=HappinessScore)) + geom_point() + ggtitle("Wine and Happiness") + xlab("Consumption of Wine per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5)) + scale_color_gradient(low = "#CCCCCC", high ="#FF4444")
+grid.arrange(Beer, Spirit, Wine, ncol=3)
+```
+</center><br>
+<p>Could alcohol actually impact happiness? This is probably a question that nobody asked, except alcohol-lovers, and the answer is actually pretty vague.</p>
+<p>Consumption of beer does not seem to have any effect on happiness, nor does consumption of spirit.</p>
+<p>However, it can be seen that countries that consume a lot of wine actually score higher than 5 on thee Cantril Ladder. Why is that? It can probably be linked to the fact that countries that drink lots of wine per capita can actually afford it, and therefore have enough money to do so, which links it back to the fact that the concept of happiness seems to be heavily influenced by the concept of money.</p><br>
 </fieldset><br>
