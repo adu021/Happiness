@@ -69,9 +69,11 @@ Work <- Indicators %>% filter(workstat != is.na(workstat)) %>% group_by(workstat
 ggplot(Work, aes(x=workstat, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on working situation") + xlab("Working situation") + ylab("Percentage") + labs(fill="Are you Happy?         ") + coord_flip() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
 Year9406 <- Indicators %>% group_by(year) %>% mutate(Total=n()) %>% ungroup() %>% group_by(year, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
 ggplot(Year9406, aes(x=year, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness from 1994 to 2006") + xlab("Year") + ylab("Percentage") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="right", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+#Income: Trying a polar approach to make it more attractive, and less generic
 Income <- Indicators %>% filter(income != is.na(income)) %>% group_by(income) %>% mutate(Total=n()) %>% ungroup() %>% group_by(income, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
 ggplot(Income, aes(x=income, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on income") + labs(fill="Are you Happy?         ") + coord_polar() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5), panel.grid = element_blank(), axis.text.x = element_text(size = 8), axis.text.y = element_blank(), axis.title = element_blank(), axis.line = element_blank(), axis.ticks = element_blank(), panel.border = element_blank()) + scale_fill_brewer(palette = "OrRd") + ylim(-100,120)
-ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_boxplot() + ggtitle("Happiness based on prestige") + xlab("Are you happy?") + ylab("Prestige") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+#Prestige: used a boxplot at first, but it erased too much of the contrast between each group. That contrast is better seen with a violin plot.
+ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_violin() + ggtitle("Happiness based on prestige") + xlab("Are you happy?") + ylab("Prestige") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
 
 #Joining the two different 2017 databases by country
 Year2017 <- left_join(W2017, Social2017, by = "Country")
@@ -92,7 +94,7 @@ E0817$year <- as.Date(E0817$year, format="%Y")
 E0817 %>% filter(country == "Afghanistan" | country == "Greece" | country == "Syria" | country == "Togo" | country == "Norway" | country == "France" | country == "Russia" | country == "United States" | country == "China") %>% ggplot(., aes(x=year, y=Life.Ladder, color=country)) + geom_line(size = 1.5) + ggtitle("Happiness for 9 countries from 2008 to 2017") + xlab("Year") + ylab("Happiness Score") + labs(color="Country    ") + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_color_brewer(palette = "OrRd")
 
 #Plotting the GDP with 2017
-ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$Country, check_overlap = T)
+ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$Country, check_overlap = TRUE, nudge_x = 0.06, nudge_y = -0.05)
 
 #Water and Environment
 Water <- ggplot(Year2017, aes(y=Happiness.Score, x=Water.and.Sanitation, color=Happiness.Score)) + geom_point() + ggtitle("Water and Sanitation") + xlab("Water and Sanitation") + ylab("Happiness Score") + theme_happiness() + theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
@@ -100,7 +102,7 @@ Environment <- ggplot(Year2017, aes(y=Happiness.Score, x=Environmental.Quality, 
 #Grid Arrange to put the different plots together
 grid.arrange(Water, Environment, ncol=2)
 
-#Life Expectancy
+#Life Expectancy: Trying out a smooth line, to better emphasize on the growing aspect, instead of a point plot
 ggplot(Year2017, aes(x=Happiness.Score, y=Healthy.life.expectancy)) + geom_smooth(color = "#FF0000") + ggtitle("Happiness linked to Life Expectancy") + xlab("Happiness Score") + ylab("Healthy Life Expectancy") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5))
 
 #Grid Arrange: Basic Needs, Nutrition, Shelter, Wellness

@@ -64,10 +64,6 @@ if(isTRUE(getOption('knitr.in.progress'))) {
 <p>The data used in this report mostly comes from the website Kaggle, such as "World Happiness Report", "World Happiness Data", "Human Happiness Indicators", "Social Progress and Happiness" and "Happiness and Alcohol Consumption". The last database called "Personal well being estimates by age and sex" comes from the Office for National Statistics – U.K..</p>
 </fieldset><br>
 
-<fieldset>
-video
-</fieldset><br>
-
 <fieldset><center><img src="General.png" alt="N/A"></center>
 <center>
 ```{r}
@@ -103,7 +99,7 @@ Year9406 <- Indicators %>% group_by(year) %>% mutate(Total=n()) %>% ungroup() %>
 ggplot(Year9406, aes(x=year, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness from 1994 to 2006") + xlab("Year") + ylab("Percentage") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="right", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
 ```
 </center><br>
-<p>Based on the data from a study on the birtish population, it is possible to see that the quantity of people being fairly happy, happy or not so happy seem to remain constant through the years. </p><br>
+<p>Based on the data from a study on the British population, it is possible to see that the quantity of people being fairly happy, happy or not so happy seem to remain constant through the years. </p><br>
 <center>
 ```{r}
 #Transforming year into dates, filtering the wanted countries and plotting it
@@ -130,7 +126,7 @@ Gender$Life_Satisfaction <- as.numeric(Gender$Life_Satisfaction)
 ggplot(Gender, aes(x=Year, y=Life_Satisfaction, color=factor(paste(Sex,'      ')))) + geom_line(size = 2) + ggtitle("Does gender influence happiness?") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5)) + xlab("Year") + ylab("Life Satisfaction Score") + labs(color="Gender") + scale_color_brewer(palette = "OrRd")
 ```
 </center><br>
-<p>Based again on the U.K. study, it can be seen that, while most people seem to be farely happy with a score of around 7 points over 10, it seems that girls slightly seem to be happier than boys.</p>
+<p>Based again on the U.K. study, it can be seen that, while most people seem to be farely happy with a score of around 7 points over 10, it seems that girls slightly seem to be happier than boys.</p><br>
 <center>
 ```{r}
 #Repeating the same pattern with Age
@@ -143,7 +139,7 @@ Age$Life_Satisfaction <- as.numeric(Age$Life_Satisfaction)
 ggplot(Age, aes(x=Year, y=Life_Satisfaction, color=factor(paste(Age_Group,'      ')))) + ggtitle("Does age influence happiness?") + geom_line() + theme_happiness() + theme(legend.position="top", plot.title = element_text(hjust = 0.5))+ xlab("Year") + ylab("Life Satisfaction Score") + labs(color="Age Group        ")
 ```
 </center><br>
-<p>It can also be seen that people from different age groups' happiness is also higher or lower based on which age group people belong to. In fact, people that are between 30 and 40, that are probably working, are slightly less happy than younger or older people.
+<p>It can also be seen that people from different age groups' happiness is also higher or lower based on which age group people belong to. In fact, people that are between 30 and 40, who are probably working, are slightly less happy than younger or older people.
 Is work related to happiness?</p><br>
 </fieldset><br>
 
@@ -151,10 +147,10 @@ Is work related to happiness?</p><br>
 <center>
 ```{r}
 #Plotting the GDP with 2017
-ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$Country, check_overlap = T)
+ggplot(Year2017, aes(x=GDP.per.capita, y=Happiness.Score)) + geom_point() + ggtitle("Happiness Score over GDP per capita") + xlab("GDP Per Capita") + ylab("Happiness Score") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + geom_text(label=Year2017$Country, check_overlap = TRUE, nudge_x = 0.06, nudge_y = -0.05)
 ```
 </center><br>
-<p>With this graph, it can be seen that there seems to be a link between GDP per capita and Happiness. Countries that have a higher GDP per capta are often showing a higher happiness score.
+<p>With this graph, it can be seen that there seems to be a link between GDP per capita and Happiness. Countries that have a higher GDP per capita are often showing a higher happiness score.
 The country's production looks like it has a strong influence on the happiness of the inhabitants of those countries.</p><br>
 <center>
 ```{r}
@@ -162,19 +158,21 @@ Work <- Indicators %>% filter(workstat != is.na(workstat)) %>% group_by(workstat
 ggplot(Work, aes(x=workstat, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on working situation") + xlab("Working situation") + ylab("Percentage") + labs(fill="Are you Happy?         ") + coord_flip() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
 ```
 </center><br>
-<p>The working situation of the British people also seem to be highly related to their own happiness. Indeed, it is possible to see that people that are "unemployed" category countains more 'not too happy' and less 'very happy' people than others. The category containing the most 'very happy' is the "retired" and "keeping house" category, which can lead us to think that work impacts negatively people's happiness when they are looking for jobs, but people who are done working or who don't but are not looking for actual jobs are the happiest. Not having to work seems to affect very differently people's lives.
-If we look more closely on people who work, the happiest are the one who are working fulltime, more than the ones working only parttime. We cand wonder if that is related to income.</p><br>
+<p>The working situation of the British people also seem to be highly related to their own happiness. Indeed, it is possible to see that the "unemployed" category countains more 'not too happy' and less 'very happy' people than others. The categories containing the most 'very happy' are the "retired" and "keeping house" categories, which can lead us to think that work impacts negatively people's happiness when they are looking for jobs, but people who are done working or who don't but are not looking for actual jobs are the happiest. Not having to work seems to affect very differently people's lives.
+If we look more closely on people who work, the happiest are the one who are working fulltime, more than the ones working only parttime. We can wonder if that is related to income.</p><br>
 <center>
 ```{r}
+#Income: Trying a polar approach to make it more attractive, and less generic
 Income <- Indicators %>% filter(income != is.na(income)) %>% group_by(income) %>% mutate(Total=n()) %>% ungroup() %>% group_by(income, happy, Total) %>% summarize(Number = n()) %>% ungroup() %>% mutate(Percent = Number*100/Total)
 ggplot(Income, aes(x=income, y=Percent, fill=factor(paste(happy,'      ')))) + geom_bar(stat="identity") + ggtitle("Happiness based on income") + labs(fill="Are you Happy?         ") + coord_polar() + theme_happiness() + theme(legend.position="bottom", plot.title = element_text(hjust = 0.5), panel.grid = element_blank(), axis.text.x = element_text(size = 8), axis.text.y = element_blank(), axis.title = element_blank(), axis.line = element_blank(), axis.ticks = element_blank(), panel.border = element_blank()) + scale_fill_brewer(palette = "OrRd") + ylim(-100,120)
 ```
 </center><br>
-<p>Income also seems to have a certain influence on the happiness of people, as the happiest seemingly are the happiest as their categories of "not too happy" is the smallest and the "very happy" is the biggest.
+<p>Income also seems to have a certain influence on the happiness of people, as the happiest seemingly are the ones earning the most money as the amount of "not too happy" is the smallest and the "very happy" is the biggest for the "$25 000 and more" category. This could also be questioned as the people earning less than $1 000 also have a huge amount of very happy people, even though their "not too happy" group is also big.
 But with such a high income also comes a certain sense of prestige, can it be that prestige is also related to happiness?</p><br>
 <center>
 ```{r}
-ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_boxplot() + ggtitle("Happiness based on prestige") + xlab("Are you happy?") + ylab("Prestige") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
+#Prestige: used a boxplot at first, but it erased too much of the contrast between each group. That contrast is better seen with a violin plot.
+ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_violin() + ggtitle("Happiness based on prestige") + xlab("Are you happy?") + ylab("Prestige") + labs(fill="Are you Happy?         ") + theme_happiness() + theme(legend.position="none", plot.title = element_text(hjust = 0.5)) + scale_fill_brewer(palette = "OrRd")
 ```
 </center><br>
 <p>Prestige also seems to slightly influence happiness. People who have more prestige seem to be slightly happier.</p><br>
@@ -184,7 +182,7 @@ ggplot(Indicators, aes(x=happy, y=prestige, fill=happy)) + geom_boxplot() + ggti
 <fieldset><center><img src="Health.png" alt="N/A"></center>
 <center>
 ```{r}
-#Life Expectancy
+#Life Expectancy: Trying out a smooth line, to better emphasize on the growing aspect, instead of a point plot
 ggplot(Year2017, aes(x=Happiness.Score, y=Healthy.life.expectancy)) + geom_smooth(color = "#FF0000") + ggtitle("Happiness linked to Life Expectancy") + xlab("Happiness Score") + ylab("Healthy Life Expectancy") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5))
 ```
 </center><br>
@@ -210,8 +208,8 @@ grid.arrange(Water, Environment, ncol=2)
 ```
 </center><br>
 <p>Health problems can also derive from the quality of the surrounding environment, so we can question if environment is also related to people's happiness.
-From these graphs, we can also see that no trend seem to show, therefore, neither environmental quality nor water and sanitation seem necessary for happiness.</p><br>
-<p>But if basic needs are not even required for happiness... What is? It might be linked to how people were raised, what values they obtained through their educations, and what they feel that they need to be happy.</p><br>
+From these graphs, we can also see that no trend seems to appear, therefore, neither environmental quality nor water and sanitation seem necessary for happiness.</p><br>
+<p>But if basic needs are not even required for happiness... What is? It might be linked to how people were raised, what values they obtained through their education, and what they feel that they need to be happy.</p><br>
 </fieldset><br>
 
 <fieldset><center><img src="Education.png" alt="N/A"></center>
@@ -224,19 +222,19 @@ Info <- ggplot(Year2017, aes(y=Happiness.Score, x=Access.to.Information.and.Comm
 grid.arrange(BKnow, AKnow, Info, ncol=3)
 ```
 </center><br>
-<p>Trends are also hard to graps considering the effects of education on happiness.</p>
+<p>Trends are also hard to grasp considering the effects of education on happiness.</p>
 <p>Most of the countries have access to basic knowledge, but that doesn't seem to affect their happiness score, as a lot of countries that have access to basic knowledge still have low happiness scores.</p>
 <p>Countries where the access to advanced education is higher than 75% actually present a high happiness score but under 75%, it all seems to be fuzzy again.</p>
-<p>Access to information and communication also doesn't seem have an effect on happiness.</p><br>
+<p>Access to information and communications also doesn't seem have an effect on happiness.</p><br>
 <center>
 ```{r}
 #Tolerance and Inclusion
 ggplot(Year2017, aes(x=Happiness.Score, y=Tolerance.and.Inclusion)) + geom_point(color = "#FF00FF") + ggtitle("Happiness linked to Tolerance and Inclusion") + xlab("Happiness Score") + ylab("Tolerance and Inclusion") + theme_happiness() + theme(plot.title = element_text(hjust = 0.5))
 ```
 </center><br>
-<p>Information and communication can also fight against ignorance which could lead to more tolerance and inclusion. But as information and communications don't seem to have an impact on happiness, it is the same for tolerance and inclusion.</p><br>
+<p>Information and communications can also fight against ignorance which could lead to more tolerance and inclusion. But as information and communications don't seem to have an impact on happiness, it is the same for tolerance and inclusion.</p><br>
 <p>Even though Advanced Education seems to have an influence on happiness, access to basic knowledge, information, communication, tolerance and inclusion don't really seem to affect people's happiness.
-It might be linked to who is deciding on what the education programs, and allows a certain level of information and communications. Is happiness also linked to politics?</p><br>
+It might be linked to who is deciding on what the education programs include, and what level of information and communications is allowed. Is happiness also linked to politics?</p><br>
 </fieldset><br>
 
 <fieldset><center><img src="Politics.png" alt="N/A"></center>
@@ -257,8 +255,8 @@ Progress <- ggplot(Year2017, aes(y=Happiness.Score, x=Social.Progress.Index, col
 grid.arrange(Support, Progress, ncol=2)
 ```
 </center><br>
-<p>Just like rights don't affect happiness, social progress don't seem to impact it either. However, it is not the case of social support, where a trend is showing: the more social support is provided, the happier are the people.</p><br>
-<p>Freedom and Social support are two factors that actually seem to impact the happiness of people, where rights and social progress seems to not help. Some people actually believe that alcohol helps them cope with their problems, as in alcohol could provide them social support. What if alcohol was actually related to happiness?</p><br>
+<p>Just like rights don't affect happiness, social progress don't seem to impact it either. However, it is not the case of social support, where a trend is showing: the more social support is provided, the happier the people are.</p><br>
+<p>Freedom and Social support are two factors that actually seem to impact the happiness of people, where rights and social progress seem to not help. Some people actually believe that alcohol helps them cope with their problems, as in alcohol could provide them social support. What if alcohol was actually related to happiness?</p><br>
 </fieldset><br>
 
 <fieldset><center><img src="Alcohol.png" alt="N/A"></center>
@@ -273,5 +271,12 @@ grid.arrange(Beer, Spirit, Wine, ncol=3)
 </center><br>
 <p>Could alcohol actually impact happiness? This is probably a question that nobody asked, except alcohol-lovers, and the answer is actually pretty vague.</p>
 <p>Consumption of beer does not seem to have any effect on happiness, nor does consumption of spirit.</p>
-<p>However, it can be seen that countries that consume a lot of wine actually score higher than 5 on thee Cantril Ladder. Why is that? It can probably be linked to the fact that countries that drink lots of wine per capita can actually afford it, and therefore have enough money to do so, which links it back to the fact that the concept of happiness seems to be heavily influenced by the concept of money.</p><br>
+<p>However, it can be seen that countries that consume a lot of wine actually score higher than 5 on the Cantril Ladder. Why is that? It can probably be linked to the fact that countries that drink lots of wine per capita can actually afford it, and therefore have enough money to do so, which links it back to the fact that the concept of happiness seems to be heavily influenced by the concept of money.</p><br>
+</fieldset><br>
+
+<fieldset><center><img src="Conclusion.png" alt="N/A">
+<video width="640" height="360" controls>
+  <source src="Conclusion.mp4" type="video/mp4">
+</video></center><br>
+<p>From this small study, we have found that freedom to make life choices, social support, work, income, national production, prestige, advanced education and a long healthy life expectation are the social aspects that affects the most the human concept of happiness.</p><br>
 </fieldset><br>
